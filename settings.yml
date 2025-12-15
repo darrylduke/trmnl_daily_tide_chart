@@ -4,7 +4,7 @@ no_screen_padding: 'no'
 dark_mode: 'no'
 static_data: ''
 polling_verb: get
-polling_url: "https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?date=today&station={{ station_id }}&product=predictions&interval=6&datum=MLLW&time_zone=lst_ldt&units=english&format=json\r\nhttps://api.tidesandcurrents.noaa.gov/mdapi/prod/webapi/stations/{{ station_id }}.json\r\nhttps://api.tidesandcurrents.noaa.gov/api/prod/datagetter?date=today&station={{ station_id }}&product=predictions&interval=hilo&datum=MLLW&time_zone=lst_ldt&units=english&format=json\r\nhttps://api.tidesandcurrents.noaa.gov/api/prod/datagetter?date=latest&station={{ station_id }}&product=one_minute_water_level&datum=MLLW&time_zone=lst_ldt&units=english&format=json"
+polling_url: "https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?date=latest&station={{ station_id }}&product=one_minute_water_level&datum=MLLW&time_zone=lst_ldt&units=english&format=json\r\nhttps://api.tidesandcurrents.noaa.gov/api/prod/datagetter?date=today&station={{ station_id }}&product=predictions&interval=6&datum=MLLW&time_zone=lst_ldt&units=english&format=json\r\nhttps://api.tidesandcurrents.noaa.gov/mdapi/prod/webapi/stations/{{ station_id }}.json\r\nhttps://api.tidesandcurrents.noaa.gov/api/prod/datagetter?date=today&station={{ station_id }}&product=predictions&interval=hilo&datum=MLLW&time_zone=lst_ldt&units=english&format=json\r\n"
 polling_headers: ''
 polling_body: ''
 id: 197206

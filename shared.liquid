@@ -13,7 +13,7 @@
     now.setSeconds({{ trmnl.user.utc_offset }})
     const labelSize = small ? '1.4em' : '2em'
   
-    const heights = {{ IDX_0.predictions | json }}.map(p => [p.t, Number(p.v)])
+    const heights = {{ IDX_1.predictions | json }}.map(p => [p.t, Number(p.v)])
     new Chartkick.LineChart(
       '{{ chart_id }}',
       heights,
@@ -76,7 +76,7 @@
 
 {% template daily_tide_chart %}
   <div class='flex flex--row border--h-4 pb--2 mb--2' style='justify-content: space-around;'>
-    {% for hilo in IDX_2.predictions %}
+    {% for hilo in IDX_3.predictions %}
       <div class='value value--{{ hilo_size }}' data-value-fit='true'>
         {% render 'tide_time', hilo: hilo %}
       </div>
@@ -86,8 +86,8 @@
   <div id='{{ chart_id }}' style='width: 100%; flex-grow: 1;'></div>
 
   <div class='title_bar'>
-    <span class='station'>Station: {{ IDX_1.stations[0].name }} ({{ station_id }})</span>
-    <span class='current-time'>{{ IDX_3.data[0].t | date: "%l:%M %p" }}</span>
+    <span class='station'>Station: {{ IDX_2.stations[0].name }} ({{ station_id }})</span>
+    <span class='current-time'>{{ IDX_0.data[0].t | date: "%l:%M %p" }}</span>
     <span class='height'>Water level: {{ IDX_3.data[0].v }} above MLLW</span>
   </div>
 {% endtemplate %}
