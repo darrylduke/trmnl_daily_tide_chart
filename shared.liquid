@@ -1,0 +1,84 @@
+{% liquid
+  assign title = trmnl.plugin_settings.instance_name
+  assign station_id = trmnl.plugin_settings.custom_fields_values.station_id
+  assign current_time = 'now' | date: "%s" | plus: trmnl.user.utc_offset
+  assign chart_id = 'tide-chart-' | append_random
+%}
+
+{% template tide_time %}
+  {% liquid
+    assign bits = hilo.t | split: ' '
+    assign time= bits[1]
+    assign time_bits = time | split: ':'
+    assign hours = time_bits[0] | abs
+    if hours > 11
+      assign ampm = 'p'
+    else
+      assign ampm = 'a'
+    endif
+    if hours > 12
+      assign hours = hours | minus: 12
+    endif
+    assign minutes = time_bits[1]
+    assign tide = hilo.type | append: ' ' | append: hours | append: ':' | append: minutes | append: ampm
+  %}
+  {{ tide }}
+{% endtemplate %}
+
+<script src='https://usetrmnl.com/js/highcharts/12.3.0/highcharts.js'></script>
+<script src='https://usetrmnl.com/js/chartkick/5.0.1/chartkick.min.js'></script>
+
+<div class='layout layout--col' style='height: 100%; align-items: stretch;'>
+  <div class='flex flex--row border--h-4 pb--2 mb--2' style='justify-content: space-between;'>
+    {% for hilo in IDX_2.predictions %}
+      <div class='value' data-value-fit='true'>
+        {% render 'tide_time', hilo: hilo %}
+      </div>
+    {% endfor %}
+  </div><!--/grid-->
+
+  <div id='{{ chart_id }}' style='width: 100%; flex-grow: 1;'></div>
+</div>
+
+<div class='title_bar'>
+  <span class='station'>Station: {{ IDX_1.stations[0].name }} ({{ station_id }})</span>
+  <span class='datum'>MLLW</span>
+  <span class='current-time'>{{ current_time | date: "%l:%M %p" }}</span>
+</div>
+
+<script type='text/javascript'>
+  // document.querySelector('.current-time').textContent = '{{ current_time | date: "%H:%M %p" }}'
+  const now = new Date()
+  now.setSeconds({{ trmnl.user.utc_offset }})
+
+  const drawTides = () => {
+    const heights = {{ IDX_0.predictions | json }}.map(p => [p.t, Number(p.v)])
+    new Chartkick.LineChart(
+      '{{ chart_id }}',
+      heights,
+      {
+        colors: ['#000', '#FFF'],
+        library: {
+          plotOptions: { series: { animation: false, lineWidth: 4, color: "#000000", marker: { enabled: false } } },
+          xAxis: {
+            type: 'datetime',
+            plotLines: [{
+                width: 2,
+                color: '#000',
+                value: now.getTime(),
+                // label: {
+                //   text: '{{ current_time | date: "%H:%M %p" }}',
+                //   style: {
+                //     fontSize: '1.8em',
+                //   },
+                // },
+            }],
+          }
+        },
+      },
+    )
+  }
+
+  if ("Chartkick" in window) drawTides()
+  else window.addEventListener("chartkick:load", drawTides, true);
+</script>
