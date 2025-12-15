@@ -4,19 +4,19 @@ no_screen_padding: 'no'
 dark_mode: 'no'
 static_data: ''
 polling_verb: get
-polling_url: "https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?date=today&station={{ station_id }}&product=predictions&interval=6&datum=MLLW&time_zone=lst_ldt&units=english&format=json\r\nhttps://api.tidesandcurrents.noaa.gov/mdapi/prod/webapi/stations/{{ station_id }}.json\r\nhttps://api.tidesandcurrents.noaa.gov/api/prod/datagetter?date=today&station={{ station_id }}&product=predictions&interval=hilo&datum=MLLW&time_zone=lst_ldt&units=english&format=json"
+polling_url: "https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?date=today&station={{ station_id }}&product=predictions&interval=6&datum=MLLW&time_zone=lst_ldt&units=english&format=json\r\nhttps://api.tidesandcurrents.noaa.gov/mdapi/prod/webapi/stations/{{ station_id }}.json\r\nhttps://api.tidesandcurrents.noaa.gov/api/prod/datagetter?date=today&station={{ station_id }}&product=predictions&interval=hilo&datum=MLLW&time_zone=lst_ldt&units=english&format=json\r\nhttps://api.tidesandcurrents.noaa.gov/api/prod/datagetter?date=latest&station={{ station_id }}&product=one_minute_water_level&datum=MLLW&time_zone=lst_ldt&units=english&format=json"
 polling_headers: ''
 polling_body: ''
-id: 196790
+id: 197206
 custom_fields:
-- keyname: noaa_tide_chart
+- keyname: daily_tide_chart
   name: About This Plugin
   field_type: author_bio
   email_address: darryl.duke@gmail.com
-  description: Display a line chart of today's tides, titled with today's high and low tides. Uses prediction data from NOAA.
+  description: Display a line chart of today's tide predictions, times for the high and low tides, and most recent water level. Uses station data from NOAA.
 - keyname: station_id
   field_type: string
   name: Station ID
   description: Find your station at <a href="https://tidesandcurrents.noaa.gov/">https://tidesandcurrents.noaa.gov/</a>
-name: Tide Chart
+name: Daily Tide Chart
 refresh_interval: 15

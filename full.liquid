@@ -1,0 +1,15 @@
+{% render 'daily_tide_chart', 
+  IDX_0: IDX_0, 
+  IDX_1: IDX_1, 
+  IDX_2: IDX_2, 
+  IDX_3: IDX_3, 
+  current_time: current_time, 
+  station_id: station_id,
+  chart_id: chart_id,
+  hilo_size: 'medium'
+%}
+
+<script type='text/javascript'>
+  if ("Chartkick" in window) drawTides({})
+  else window.addEventListener("chartkick:load", () => drawTides({}), true);
+</script>
