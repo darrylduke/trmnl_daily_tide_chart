@@ -75,10 +75,18 @@
 {% endtemplate %}
 
 {% template daily_tide_chart %}
-  <div class='flex flex--row border--h-4 pb--2 mb--2' style='justify-content: space-around;'>
+  <div class='flex flex--row' style='justify-content: space-around;'>
     {% for hilo in IDX_3.predictions %}
       <div class='value value--{{ hilo_size }}' data-value-fit='true'>
         {% render 'tide_time', hilo: hilo %}
+      </div>
+    {% endfor %}
+  </div>
+
+  <div class='flex flex--row border--h-4 pb--2 mb--2' style='justify-content: space-around;'>
+    {% for hilo in IDX_3.predictions %}
+      <div class='value value--xxsmall' data-value-fit='true'>
+        {{ hilo.v }}
       </div>
     {% endfor %}
   </div>
