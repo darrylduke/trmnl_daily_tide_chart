@@ -13,7 +13,7 @@ custom_fields:
   name: About This Plugin
   field_type: author_bio
   email_address: darryl.duke@gmail.com
-  description: Display a line chart of today's tide predictions, times for the high and low tides, and most recent water level. Uses station data from NOAA.
+  description: Display a line chart of today's tide predictions, times and heights for the high and low tides, and most recent water level. Uses station data from NOAA.
 - keyname: station_id
   field_type: string
   name: Station ID

@@ -86,7 +86,7 @@
   <div class='flex flex--row border--h-4 pb--2 mb--2' style='justify-content: space-around;'>
     {% for hilo in IDX_3.predictions %}
       <div class='value value--xxsmall' data-value-fit='true'>
-        {{ hilo.v }}
+        {{ hilo.v }} ft
       </div>
     {% endfor %}
   </div>
@@ -96,6 +96,6 @@
   <div class='title_bar text-stroke flex gap--space-between'>
     <span class='title station' data-clamp="1">Station: {{ IDX_2.stations[0].name }} ({{ station_id }})</span>
     <span class='title current-time' data-clamp="1">{{ IDX_0.data[0].t | date: "%l:%M %p" }}</span>
-    <span class='title height' data-clamp="1">Level: {{ IDX_0.data[0].v }} above MLLW</span>
+    <span class='title height' data-clamp="1">Level: {{ IDX_0.data[0].v }} ft above MLLW</span>
   </div>
 {% endtemplate %}
