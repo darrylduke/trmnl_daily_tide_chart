@@ -8,8 +8,8 @@
 
 <script type='text/javascript'>
   function drawTides({small}) {
-    const now = new Date()
-    now.setSeconds({{ trmnl.user.utc_offset | default: 0 }})
+    const latest = {{ IDX_0.data[0].t | json }}
+    const now = latest ? new Date(latest.replace(' ', 'T')) : new Date() 
     const labelSize = small ? '1.4em' : '2em'
   
     const heights = {{ IDX_1.predictions | json }}.map(p => [p.t, Number(p.v)])
@@ -69,56 +69,6 @@
 
 {% template moon_phase %}
   {% liquid
-  # --- CONTINUOUS MOON ENGINE ---
-  # --- TRUE ELONGATION (Meeus ch. 47/48, main terms) ---
-  # Days since J2000.0 (UTC 2000-01-01 12:00 = 946728000)
-  assign m_days = 'now' | date: "%s" | minus: 946728000 | divided_by: 86400.0
-
-  # Mean elongation, sun anomaly, moon anomaly (degrees)
-  assign m_D = m_days | times: 12.19074912 | plus: 297.8501921 | modulo: 360
-  assign m_M = m_days | times: 0.98560028 | plus: 357.5291092 | modulo: 360
-  assign m_Mp = m_days | times: 13.06499295 | plus: 134.9633964 | modulo: 360
-
-  # Sum of the six biggest periodic terms: coef * sin(arg)
-  assign m_sum = 0.0
-  for m_k in (1..6)
-    case m_k
-      when 1
-        assign m_arg = m_Mp
-        assign m_coef = 6.289
-      when 2
-        assign m_arg = m_M
-        assign m_coef = -2.1
-      when 3
-        assign m_arg = m_D | times: 2 | minus: m_Mp
-        assign m_coef = 1.274
-      when 4
-        assign m_arg = m_D | times: 2
-        assign m_coef = 0.658
-      when 5
-        assign m_arg = m_Mp | times: 2
-        assign m_coef = 0.214
-      when 6
-        assign m_arg = m_D
-        assign m_coef = 0.11
-    endcase
-
-    # sin(arg) via Bhaskara: reduce to 0..180 and track the sign
-    assign m_a = m_arg | modulo: 360
-    if m_a < 180
-      assign m_sgn = 1
-      assign m_h = m_a
-    else
-      assign m_sgn = -1
-      assign m_h = m_a | minus: 180
-    endif
-    assign m_rest = 180 | minus: m_h
-    assign m_p = m_h | times: m_rest
-    assign m_den = 40500 | minus: m_p
-    assign m_sin = m_p | times: 4 | divided_by: m_den
-    assign m_sum = m_sin | times: m_sgn | times: m_coef | plus: m_sum
-  endfor
-
   # --- TRUE ELONGATION (Meeus ch. 47/48, main terms) ---
   # Days since J2000.0 (UTC 2000-01-01 12:00 = 946728000)
   assign m_days = 'now' | date: "%s" | minus: 946728000 | divided_by: 86400.0
@@ -279,8 +229,6 @@
 {% endtemplate %}
 
 {% template daily_tide_chart %}
-  
-
   <!-- Master Multi-Column Header Layout Container -->
   <div class='flex flex--row border--h-4 pb--2 mb--2' style='justify-content: space-around; align-items: center;'>
   
