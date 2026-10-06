@@ -71,10 +71,122 @@
 {% template daily_tide_chart %}
   {% liquid
   # --- CONTINUOUS MOON ENGINE ---
-  assign now_epoch = 'now' | date: "%s"
-  assign age_secs = now_epoch | minus: 947182440
-  assign f = age_secs | modulo: 2551443 | divided_by: 2551443.0
+  # --- TRUE ELONGATION (Meeus ch. 47/48, main terms) ---
+  # Days since J2000.0 (UTC 2000-01-01 12:00 = 946728000)
+  assign m_days = 'now' | date: "%s" | minus: 946728000 | divided_by: 86400.0
 
+  # Mean elongation, sun anomaly, moon anomaly (degrees)
+  assign m_D = m_days | times: 12.19074912 | plus: 297.8501921 | modulo: 360
+  assign m_M = m_days | times: 0.98560028 | plus: 357.5291092 | modulo: 360
+  assign m_Mp = m_days | times: 13.06499295 | plus: 134.9633964 | modulo: 360
+
+  # Sum of the six biggest periodic terms: coef * sin(arg)
+  assign m_sum = 0.0
+  for m_k in (1..6)
+    case m_k
+      when 1
+        assign m_arg = m_Mp
+        assign m_coef = 6.289
+      when 2
+        assign m_arg = m_M
+        assign m_coef = -2.1
+      when 3
+        assign m_arg = m_D | times: 2 | minus: m_Mp
+        assign m_coef = 1.274
+      when 4
+        assign m_arg = m_D | times: 2
+        assign m_coef = 0.658
+      when 5
+        assign m_arg = m_Mp | times: 2
+        assign m_coef = 0.214
+      when 6
+        assign m_arg = m_D
+        assign m_coef = 0.11
+    endcase
+
+    # sin(arg) via Bhaskara: reduce to 0..180 and track the sign
+    assign m_a = m_arg | modulo: 360
+    if m_a < 180
+      assign m_sgn = 1
+      assign m_h = m_a
+    else
+      assign m_sgn = -1
+      assign m_h = m_a | minus: 180
+    endif
+    assign m_rest = 180 | minus: m_h
+    assign m_p = m_h | times: m_rest
+    assign m_den = 40500 | minus: m_p
+    assign m_sin = m_p | times: 4 | divided_by: m_den
+    assign m_sum = m_sin | times: m_sgn | times: m_coef | plus: m_sum
+  endfor
+
+  # --- TRUE ELONGATION (Meeus ch. 47/48, main terms) ---
+  # Days since J2000.0 (UTC 2000-01-01 12:00 = 946728000)
+  assign m_days = 'now' | date: "%s" | minus: 946728000 | divided_by: 86400.0
+
+  # Mean elongation, sun anomaly, moon anomaly (degrees), wrapped to 0..360
+  # wrap pattern: v - floor(v / 360) * 360
+  assign m_D = m_days | times: 12.19074912 | plus: 297.8501921
+  assign m_w = m_D | divided_by: 360.0 | floor | times: 360
+  assign m_D = m_D | minus: m_w
+
+  assign m_M = m_days | times: 0.98560028 | plus: 357.5291092
+  assign m_w = m_M | divided_by: 360.0 | floor | times: 360
+  assign m_M = m_M | minus: m_w
+
+  assign m_Mp = m_days | times: 13.06499295 | plus: 134.9633964
+  assign m_w = m_Mp | divided_by: 360.0 | floor | times: 360
+  assign m_Mp = m_Mp | minus: m_w
+
+  # Sum of the six biggest periodic terms: coef * sin(arg)
+  assign m_sum = 0.0
+  for m_k in (1..6)
+    case m_k
+      when 1
+        assign m_arg = m_Mp
+        assign m_coef = 6.289
+      when 2
+        assign m_arg = m_M
+        assign m_coef = -2.1
+      when 3
+        assign m_arg = m_D | times: 2 | minus: m_Mp
+        assign m_coef = 1.274
+      when 4
+        assign m_arg = m_D | times: 2
+        assign m_coef = 0.658
+      when 5
+        assign m_arg = m_Mp | times: 2
+        assign m_coef = 0.214
+      when 6
+        assign m_arg = m_D
+        assign m_coef = 0.11
+    endcase
+
+    # wrap arg to 0..360 (floor-based, safe for negatives)
+    assign m_w = m_arg | divided_by: 360.0 | floor | times: 360
+    assign m_a = m_arg | minus: m_w
+
+    # sin(arg) via Bhaskara: reduce to 0..180 and track the sign
+    if m_a < 180
+      assign m_sgn = 1
+      assign m_h = m_a
+    else
+      assign m_sgn = -1
+      assign m_h = m_a | minus: 180
+    endif
+    assign m_rest = 180 | minus: m_h
+    assign m_p = m_h | times: m_rest
+    assign m_den = 40500 | minus: m_p
+    assign m_sin = m_p | times: 4 | divided_by: m_den
+    assign m_sum = m_sin | times: m_sgn | times: m_coef | plus: m_sum
+  endfor
+
+  # True elongation in degrees (0 = new, 180 = full) -> cycle fraction
+  assign m_E = m_D | plus: m_sum
+  assign m_w = m_E | divided_by: 360.0 | floor | times: 360
+  assign m_E = m_E | minus: m_w
+  assign f = m_E | divided_by: 360.0
+  
   # f: 0 = new, 0.5 = full. u folds the cycle to 0..0.5
   if f < 0.5
     assign waxing = true
@@ -169,7 +281,7 @@
       </div>
       <!-- Row 2: Smaller Label Name -->
       <div class='value value--xxsmall' style='white-space: nowrap; line-height: 1;'>
-        {{ phase_name }} {{ illum }}%
+        {{ phase_name }} ({{ illum }}%)
       </div>
     </div>
 
