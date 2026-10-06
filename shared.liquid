@@ -3,7 +3,6 @@
 
 {% liquid
   assign station_id = trmnl.plugin_settings.custom_fields_values.station_id
-  assign current_time = 'now' | date: "%s" | plus: trmnl.user.utc_offset
   assign chart_id = 'tide-chart-' | append_random
 %}
 
@@ -68,7 +67,7 @@
   {{ tide }}
 {% endtemplate %}
 
-{% template daily_tide_chart %}
+{% template moon_phase %}
   {% liquid
   # --- CONTINUOUS MOON ENGINE ---
   # --- TRUE ELONGATION (Meeus ch. 47/48, main terms) ---
@@ -267,23 +266,26 @@
   assign moon_svg = '<circle cx="50" cy="50" r="48" fill="black" /><path d="M 50 2 A 48 48 0 0 ' | append: limb | append: ' 50 98 A ' | append: rx | append: ' 48 0 0 ' | append: sweep2 | append: ' 50 2 Z" fill="white" />'
 %}
 
+  <div class='flex flex--col items-center justify-center mr--4'>
+    <div style='width: 42px; height: 42px; min-width: 42px; margin-bottom: 4px;'>
+      <svg viewBox="0 0 100 100" style="width: 42px; height: 42px; display: block; border: 1px solid black; border-radius: 50%;">
+        {{ moon_svg }}
+      </svg>
+    </div>
+    <div class='value value--xxsmall' style='white-space: nowrap; line-height: 1;'>
+      {{ phase_name }}{% comment %} ({{ illum }}%) {% endcomment %}
+    </div>
+  </div>
+{% endtemplate %}
+
+{% template daily_tide_chart %}
+  
+
   <!-- Master Multi-Column Header Layout Container -->
   <div class='flex flex--row border--h-4 pb--2 mb--2' style='justify-content: space-around; align-items: center;'>
   
-    <!-- COLUMN 1: Moon Phase Data Container -->
-    <div class='flex flex--col items-center justify-center mr--4'>
-
-      <!-- Row 1: Upgraded 42px SVG Image Bounding Container -->
-      <div style='width: 42px; height: 42px; min-width: 42px; margin-bottom: 4px;'>
-        <svg viewBox="0 0 100 100" style="width: 42px; height: 42px; display: block; border: 1px solid black; border-radius: 50%;">
-          {{ moon_svg }}
-        </svg>
-      </div>
-      <!-- Row 2: Smaller Label Name -->
-      <div class='value value--xxsmall' style='white-space: nowrap; line-height: 1;'>
-        {{ phase_name }} ({{ illum }}%)
-      </div>
-    </div>
+    <!-- COLUMN 1: Moon Phase -->
+    {% render 'moon_phase' %}
 
     <!-- COLUMN 2: Pure Space-Between Tide Matrix Info -->
     <div class='flex flex--col' style='flex-grow: 1;'>
