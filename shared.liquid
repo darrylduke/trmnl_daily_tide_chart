@@ -70,48 +70,90 @@
 
 {% template daily_tide_chart %}
   {% liquid
-    # --- DYNAMIC 32-PHASE MATHEMATICAL MOON ENGINE ---
-    assign seconds_since_new_moon = current_time | minus: 947182440
-    assign cycle_seconds = 2551443
-    assign current_cycle_remainder = seconds_since_new_moon | modulo: cycle_seconds
-    
-    # 0 to 31 step range calculation (32 distinct options)
-    assign phase_step = current_cycle_remainder | times: 32 | divided_by: cycle_seconds
+  # --- CONTINUOUS MOON ENGINE ---
+  assign now_epoch = 'now' | date: "%s"
+  assign age_secs = now_epoch | minus: 947182440
+  assign f = age_secs | modulo: 2551443 | divided_by: 2551443.0
 
-    if phase_step == 0 or phase_step == 32
-      assign phase_name = "New Moon"
-      assign moon_svg = '<circle cx="50" cy="50" r="48" fill="black" />'
-    elsif phase_step < 8
-      assign phase_name = "Wax. Cres."
-      assign step_factor = 8 | minus: phase_step
-      assign rx = step_factor | times: 6
-      assign moon_svg = '<circle cx="50" cy="50" r="48" fill="black" /><path d="M 50 2 A 48 48 0 0 0 50 98 A ' | append: rx | append: ' 48 0 0 0 50 2 Z" fill="white" />'
-    elsif phase_step == 8
+  # f: 0 = new, 0.5 = full. u folds the cycle to 0..0.5
+  if f < 0.5
+    assign waxing = true
+    assign u = f
+  else
+    assign waxing = false
+    assign u = 1.0 | minus: f
+  endif
+
+  # d folds again to 0..0.25 (angle from nearest new/full moon)
+  if u < 0.25
+    assign d = u
+    assign gibbous = false
+  else
+    assign d = 0.5 | minus: u
+    assign gibbous = true
+  endif
+
+  # Bhaskara cosine approximation for x in 0..pi/2
+  assign x = d | times: 6.2831853
+  assign x2 = x | times: x
+  assign four_x2 = x2 | times: 4
+  assign num = 9.8696044 | minus: four_x2
+  assign den = 9.8696044 | plus: x2
+  assign c = num | divided_by: den
+  assign rx = c | times: 48 | round: 1
+
+  # Illumination %
+  if gibbous
+    assign cos_t = c | times: -1
+  else
+    assign cos_t = c
+  endif
+  assign illum = 1.0 | minus: cos_t | times: 50 | round
+
+  # Arc sweeps: first arc = outer limb (right side if waxing, left if waning)
+  if waxing
+    assign limb = 1
+    if gibbous
+      assign sweep2 = 1
+    else
+      assign sweep2 = 0
+    endif
+  else
+    assign limb = 0
+    if gibbous
+      assign sweep2 = 0
+    else
+      assign sweep2 = 1
+    endif
+  endif
+
+  # Names
+  if illum < 2
+    assign phase_name = "New Moon"
+  elsif illum > 98
+    assign phase_name = "Full Moon"
+  elsif rx < 3
+    if waxing
       assign phase_name = "1st Qtr"
-      assign moon_svg = '<circle cx="50" cy="50" r="48" fill="black" /><path d="M 50 2 A 48 48 0 0 1 50 98 Z" fill="white" />'
-    elsif phase_step < 16
-      assign phase_name = "Wax. Gibb."
-      assign step_factor = phase_step | minus: 8
-      assign rx = step_factor | times: 6
-      assign moon_svg = '<circle cx="50" cy="50" r="48" fill="black" /><path d="M 50 2 A 48 48 0 0 1 50 98 Z" fill="white" /><path d="M 50 2 A ' | append: rx | append: ' 48 0 0 0 50 98 Z" fill="white" />'
-    elsif phase_step == 16
-      assign phase_name = "Full Moon"
-      assign moon_svg = '<circle cx="50" cy="50" r="48" fill="white" />'
-    elsif phase_step < 24
-      assign phase_name = "Wan. Gibb."
-      assign step_factor = 24 | minus: phase_step
-      assign rx = step_factor | times: 6
-      assign moon_svg = '<circle cx="50" cy="50" r="48" fill="black" /><path d="M 50 2 A 48 48 0 0 0 50 98 Z" fill="white" /><path d="M 50 2 A ' | append: rx | append: ' 48 0 0 1 50 98 Z" fill="white" />'
-    elsif phase_step == 24
+    else
       assign phase_name = "3rd Qtr"
-      assign moon_svg = '<circle cx="50" cy="50" r="48" fill="black" /><path d="M 50 2 A 48 48 0 0 0 50 98 Z" fill="white" />'
+    endif
+  elsif gibbous
+    if waxing
+      assign phase_name = "Wax. Gibb."
+    else
+      assign phase_name = "Wan. Gibb."
+    endif
+  else
+    if waxing
+      assign phase_name = "Wax. Cres."
     else
       assign phase_name = "Wan. Cres."
-      assign step_factor = phase_step | minus: 24
-      assign rx = step_factor | times: 6
-      assign moon_svg = '<circle cx="50" cy="50" r="48" fill="black" /><path d="M 50 2 A 48 48 0 0 0 50 98 A ' | append: rx | append: ' 48 0 0 1 50 2 Z" fill="white" />'
     endif
-  %}
+  endif
+
+  assign moon_svg = '<circle cx="50" cy="50" r="48" fill="black" /><path d="M 50 2 A 48 48 0 0 ' | append: limb | append: ' 50 98 A ' | append: rx | append: ' 48 0 0 ' | append: sweep2 | append: ' 50 2 Z" fill="white" />'
+%}
 
   <!-- Master Multi-Column Header Layout Container -->
   <div class='flex flex--row border--h-4 pb--2 mb--2' style='justify-content: space-around; align-items: center;'>
@@ -127,7 +169,7 @@
       </div>
       <!-- Row 2: Smaller Label Name -->
       <div class='value value--xxsmall' style='white-space: nowrap; line-height: 1;'>
-        {{ phase_name }}
+        {{ phase_name }} {{ illum }}%
       </div>
     </div>
 
